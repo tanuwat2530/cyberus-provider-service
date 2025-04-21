@@ -1,14 +1,13 @@
 package services
 
 import (
-	"CyberusGolangShareLibrary/postgresql_db"
 	"CyberusGolangShareLibrary/redis_db"
+	"encoding/json"
 	"log"
 	"strconv"
 	"time"
 
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -16,14 +15,16 @@ import (
 
 // Struct to map the expected JSON fields
 type MoFlowReceiveRequest struct {
-	IdPartner    string `json:"id_partner"`
-	RefIdPartner string `json:"refid_partner"`
-	MediaPartner string `json:"media_partner"`
-	NamePartner  string `json:"name_partner"`
+	AgencyId  string `json:"agency_id"`
+	PartnerId string `json:"partner_id"`
+	RefId     string `json:"refid"`
+	AdsId     string `json:"adsid"`
 }
 
 func MoFlowReceiveProcessRequest(r *http.Request) map[string]string {
 
+	res := map[string]string{}
+	var payload map[string]interface{}
 	// Get current time
 	now := time.Now()
 	// Unix timestamp in nanoseconds
@@ -36,29 +37,71 @@ func MoFlowReceiveProcessRequest(r *http.Request) map[string]string {
 	// Get a Client IP address
 	ip := r.RemoteAddr
 
-	fmt.Println("ClientIP : " + ip)
+	errPayload := json.NewDecoder(r.Body).Decode(&payload)
+	if errPayload != nil {
+		// Example: print the values
+		//fmt.Println("Error decode Json to map[string]interface{} :", errPayload.Error())
 
-	dns := "host=localhost user=root password=11111111 dbname=cyberus_db port=5432 sslmode=disable TimeZone=Asia/Bangkok search_path=root@cyberus"
-	// Init database
-	postgresDB, sqlConfig, err := postgresql_db.PostgreSqlInstance(dns)
-	if err != nil {
-		panic(err)
+		res["code"] = "-1"
+		res["desc"] = "JSON Decode error"
+		res["ref-id"] = "undefined"
+		res["tran-ref"] = "undefined"
+		res["media"] = "undefined"
+		return res
 	}
-	// Test connection
-	err = sqlConfig.Ping()
-	if err != nil {
-		fmt.Println(err)
-	}
-	postgresDB.DB()
 
+	jsonData, err := json.MarshalIndent(payload, "", "  ")
+	if err != nil {
+		//fmt.Println("Error marshalling JSON:", err.Error())
+		res["code"] = "-2"
+		res["desc"] = "JSON Marshalling error"
+		res["ref-id"] = "undefined"
+		res["tran-ref"] = "undefined"
+		res["media"] = "undefined"
+		return res
+	}
+
+	// // Unmarshal JSON into struct
+	var requestData MoFlowReceiveRequest
+	err = json.Unmarshal(jsonData, &requestData)
+	if err != nil {
+		//fmt.Println("Error map Json to Struct :" + err.Error())
+		//fmt.Println("Error marshalling JSON:", err.Error())
+		res["code"] = "-3"
+		res["desc"] = "JSON Struct error"
+		res["ref-id"] = "undefined"
+		res["tran-ref"] = "undefined"
+		res["media"] = "undefined"
+		return res
+	}
+
+	// // Add ClientIP to Payload
+	payload["client_ip"] = ip
+	payload["timestamp"] = nano_timestamp
+	payload["transaction_id"] = transaction_id
+	payload["agency_id"] = requestData.AgencyId
+	payload["partner_id"] = requestData.PartnerId
+	payload["ads_id"] = requestData.AdsId
+	payload["ref_id"] = requestData.RefId
+	// Convert the struct to JSON string
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		fmt.Printf("Failed to convert payload to JSON:  %+v\n ", http.StatusInternalServerError)
+		fmt.Println("Error marshalling JSON:", err.Error())
+		res["code"] = "-4"
+		res["desc"] = "Additional value error"
+		return res
+	}
+
+	payloadString := string(payloadBytes)
+	fmt.Println(payloadString)
 	redis_db.ConnectRedis()
+	redis_key := "MO:" + requestData.PartnerId + ":" + transaction_id
 
-	redis_key := transaction_id
-	redis_value := transaction_id
 	ttl := 1 * time.Hour // expires in 1 Hour
 
 	// Set key with TTL
-	if err := redis_db.SetWithTTL(redis_key, redis_value, ttl); err != nil {
+	if err := redis_db.SetWithTTL(redis_key, payloadString, ttl); err != nil {
 		//write to file if Redis problem or forward request to AIS
 		log.Fatalf("SetWithTTL error: %v", err)
 	}
@@ -73,19 +116,11 @@ func MoFlowReceiveProcessRequest(r *http.Request) map[string]string {
 	// }
 
 	//redis_db.Set("aaa", "AAA", 300)
-	res := map[string]string{
-		"code":           "0",
-		"message":        "retrieved",
-		"timestamp":      nano_timestamp,
-		"transaction_id": transaction_id,
-	}
 
-	// Read the request body
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		//http.Error(w, "Failed to read body", http.StatusBadRequest)
-		return res
-	}
+	res["code"] = "200"
+	res["message"] = "OK"
+	res["transaction_id"] = transaction_id
+
 	defer r.Body.Close()
 
 	return res

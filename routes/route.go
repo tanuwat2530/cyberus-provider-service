@@ -1,13 +1,14 @@
 package routes
 
 import (
+	"cyberus/provider-service/controllers"
 	"net/http"
 )
 
 // SetupRoutes registers all application routes
 func SetupRoutes() {
 	// Register routes using http.HandleFunc
-	http.HandleFunc("/api/mo-flow-receive", controllers.MoFlowReceive
+	http.HandleFunc("/api/mo-flow-receive", controllers.MoFlowReceive)
 	http.HandleFunc("/api/", HomeHandler)
 }
 

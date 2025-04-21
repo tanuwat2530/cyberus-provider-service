@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"CyberusGolangShareLibrary/utilities"
 	services "cyberus/provider-service/services"
 
 	"net/http"
