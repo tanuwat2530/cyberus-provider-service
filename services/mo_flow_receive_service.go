@@ -91,20 +91,20 @@ func MoFlowReceiveProcessRequest(agency_id string, partner_id string, refid stri
 		} else {
 
 			// Convert to JSON string
-			jsonData, err := json.Marshal(clientService)
-			if err != nil {
-				fmt.Println("Error marshaling JSON:", err)
-				res["code"] = "-1"
-				res["message"] = "Convert Json error"
-				res["transaction_id"] = transaction_id
-				return res
-			}
+			// jsonData, err := json.Marshal(clientService)
+			// if err != nil {
+			// 	fmt.Println("Error marshaling JSON:", err)
+			// 	res["code"] = "-1"
+			// 	res["message"] = "Convert Json error"
+			// 	res["transaction_id"] = transaction_id
+			// 	return res
+			// }
 
 			// Convert the int field to string
 
 			var counter = strconv.Itoa(clientService.PostbackCounter)
 			cacheData := "{\"keyword\":\"" + clientService.Keyword + "\",\"shortcode\":\"" + clientService.Shortcode + "\",\"telcoid\":\"" + clientService.TelcoID + "\",\"ads_id\":\"" + clientService.AdsID + "\",\"client_partner_id\":\"" + clientService.ClientPartnerID + "\",\"wap_aoc_refid\":\"" + clientService.WapAocRefID + "\",\"wap_aoc_id\":\"" + clientService.WapAocID + "\",\"wap_aoc_media\":\"" + clientService.WapAocMedia + "\",\"postback_url\":\"" + clientService.PostbackURL + "\",\"dn_url\":\"" + clientService.DNURL + "\",\"postback_counter\":" + counter + "}"
-			redis_key := "SERVICES:" + partner_id + ":" + adsid
+			redis_key := "SERVICE:" + partner_id + ":" + adsid
 			ttl := 240 * time.Hour // expires in 240 Hour
 			// Set key with TTL
 			if err := redis_db.SetWithTTL(redis_key, cacheData, ttl); err != nil {

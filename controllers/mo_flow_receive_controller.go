@@ -10,7 +10,6 @@ import (
 )
 
 func MoFlowReceive(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Call controller")
 	// Check if the method is POST
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
