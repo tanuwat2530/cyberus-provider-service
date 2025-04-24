@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func MoFlowReceive(w http.ResponseWriter, r *http.Request) {
+func AisMoFlowReceive(w http.ResponseWriter, r *http.Request) {
 	// Check if the method is POST
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -22,7 +22,7 @@ func MoFlowReceive(w http.ResponseWriter, r *http.Request) {
 	refid := r.URL.Query().Get("refid")
 	adsid := r.URL.Query().Get("adsid")
 
-	response := services.MoFlowReceiveProcessRequest(agency_id, partner_id, refid, adsid, client_ip)
+	response := services.AisMoFlowReceiveProcessRequest(agency_id, partner_id, refid, adsid, client_ip)
 	// fmt.Println(response["code"])
 	// fmt.Println(response["partner_id"])
 	// fmt.Println(response["refid"])

@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func MoFlowReceiveProcessRequest(agency_id string, partner_id string, refid string, adsid string, client_ip string) map[string]string {
+func AisMoFlowReceiveProcessRequest(agency_id string, partner_id string, refid string, adsid string, client_ip string) map[string]string {
 	// var payload map[string]interface{}
 	res := map[string]string{}
 

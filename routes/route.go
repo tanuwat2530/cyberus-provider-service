@@ -8,7 +8,8 @@ import (
 // SetupRoutes registers all application routes
 func SetupRoutes() {
 	// Register routes using http.HandleFunc
-	http.HandleFunc("/api/mo-flow-receive", controllers.MoFlowReceive)
+	http.HandleFunc("/ais/mo-flow-receive", controllers.AisMoFlowReceive)
+	http.HandleFunc("/tmvh/mo-flow-receive", controllers.TmvhMoFlowReceive)
 	http.HandleFunc("/api/", HomeHandler)
 }
 
