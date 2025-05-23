@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"time"
 
@@ -15,6 +16,8 @@ import (
 
 func TmvhMoFlowReceiveProcessRequest(agency_id string, partner_id string, refid string, adsid string, client_ip string) map[string]string {
 	// var payload map[string]interface{}
+	redisConnection := os.Getenv("BN_REDIS_URL")
+	dbConnection := os.Getenv("BN_DB_URL")
 	res := map[string]string{}
 
 	// // Get current time
@@ -60,17 +63,15 @@ func TmvhMoFlowReceiveProcessRequest(agency_id string, partner_id string, refid 
 	payloadString := string(jsonData)
 	//fmt.Println(payloadString)
 
-	redis_db.ConnectRedis()
+	redis_db.ConnectRedis(redisConnection, "", 0)
 
 	//Find partner service in Redis
 	partner_service, getRedisErr := redis_db.GetValue("SERVICES:" + partner_id + ":" + adsid)
 	fmt.Println("Redis Cache : " + partner_service)
 	if getRedisErr != nil {
 
-		dns := "host=localhost user=root password=11111111 dbname=cyberus_db port=5432 sslmode=disable TimeZone=Asia/Bangkok search_path=root@cyberus"
-
 		// Init database
-		postgresDB, sqlConfig, err := postgresql_db.PostgreSqlInstance(dns)
+		postgresDB, sqlConfig, err := postgresql_db.PostgreSqlInstance(dbConnection)
 		if err != nil {
 			panic(err)
 		}
@@ -114,7 +115,7 @@ func TmvhMoFlowReceiveProcessRequest(agency_id string, partner_id string, refid 
 		}
 	}
 
-	redis_key := "MO:" + partner_id + ":" + transaction_id
+	redis_key := "TMVH-MO:" + partner_id + ":" + transaction_id
 
 	ttl := 240 * time.Hour // expires in 240 Hour
 	// Set key with TTL
