@@ -66,7 +66,7 @@ func TmvhMoFlowReceiveProcessRequest(agency_id string, partner_id string, refid 
 	redis_db.ConnectRedis(redisConnection, "", 0)
 
 	//Find partner service in Redis
-	partner_service, getRedisErr := redis_db.GetValue("SERVICES:" + partner_id + ":" + adsid)
+	partner_service, getRedisErr := redis_db.GetValue("SERVICE:" + partner_id + ":" + adsid)
 	fmt.Println("Redis Cache : " + partner_service)
 	if getRedisErr != nil {
 

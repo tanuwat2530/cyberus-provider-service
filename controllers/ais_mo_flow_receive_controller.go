@@ -10,6 +10,7 @@ import (
 )
 
 func AisMoFlowReceive(w http.ResponseWriter, r *http.Request) {
+	//redirectUrl := os.Getenv("BN_DB_URL")
 	// Check if the method is POST
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -31,7 +32,7 @@ func AisMoFlowReceive(w http.ResponseWriter, r *http.Request) {
 
 	// Build redirect URL with query params
 	if response["code"] == "302" {
-		url := "https://portal.mmtcontent.com/landing?id" + response["partner_id"] + "s&refid=" + response["refid"] + "&media=" + response["adsid"]
+		url := "https://portal.mmtcontent.com/landing?id" + response["partner_id"] + "&refid=" + response["refid"] + "&media=" + response["adsid"]
 		resp, err := http.Get(url)
 		if err != nil {
 			fmt.Println("Error:", err)
