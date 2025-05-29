@@ -3,8 +3,6 @@ package controllers
 import (
 	"CyberusGolangShareLibrary/utilities"
 	services "cyberus/provider-service/services"
-	"fmt"
-	"io/ioutil"
 
 	"net/http"
 )
@@ -24,25 +22,12 @@ func AisMoFlowReceive(w http.ResponseWriter, r *http.Request) {
 	adsid := r.URL.Query().Get("adsid")
 
 	response := services.AisMoFlowReceiveProcessRequest(agency_id, partner_id, refid, adsid, client_ip)
-	// fmt.Println(response["code"])
-	// fmt.Println(response["partner_id"])
-	// fmt.Println(response["refid"])
-	// fmt.Println(response["adsid"])
-	//utilities.ResponseWithJSON(w, http.StatusOK, response)
 
 	// Build redirect URL with query params
 	if response["code"] == "302" {
-		url := "https://portal.mmtcontent.com/landing?id" + response["partner_id"] + "&refid=" + response["refid"] + "&media=" + response["adsid"]
-		resp, err := http.Get(url)
-		if err != nil {
-			fmt.Println("Error:", err)
-			return
-		}
-		defer resp.Body.Close()
-
-		body, _ := ioutil.ReadAll(resp.Body)
-		// Display it in a simple HTML template
-		fmt.Fprintf(w, `%s`, body)
+		url := "http://www.bigfunarea.com/?id=" + response["shortcode"] + "&refid=" + response["refid"] + "&media=" + response["adsid"]
+		// For demonstration, let's use 302 Found (temporary redirect)
+		http.Redirect(w, r, url, http.StatusFound)
 
 	}
 	if response["code"] == "-1" {
