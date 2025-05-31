@@ -29,7 +29,7 @@ type cacheRedis struct {
 	PostbackCounter int    `json:"postback_counter"`
 }
 
-func TmvhMoFlowReceiveProcessRequest(agency_id string, partner_id string, refid string, adsid string, client_ip string) map[string]string {
+func TmvhMoFlowReceiveProcessRequest(partner_id string, refid string, adsid string, client_ip string) map[string]string {
 	// var payload map[string]interface{}
 	redisConnection := os.Getenv("BN_REDIS_URL")
 	dbConnection := os.Getenv("BN_DB_URL")
@@ -44,7 +44,7 @@ func TmvhMoFlowReceiveProcessRequest(agency_id string, partner_id string, refid 
 	// // Generate a random UUID (UUID v4)
 	transaction_id := uuid.New().String()
 
-	if agency_id == "" || partner_id == "" || refid == "" || adsid == "" {
+	if partner_id == "" || refid == "" || adsid == "" {
 		fmt.Println("Invalid param")
 		res["code"] = "-1"
 		res["message"] = "Invalid param"
@@ -54,7 +54,6 @@ func TmvhMoFlowReceiveProcessRequest(agency_id string, partner_id string, refid 
 
 	// Parse query parameters into a map
 	payload := map[string]string{
-		"agency_id":  agency_id,
 		"partner_id": partner_id,
 		"refid":      refid,
 		"adsid":      adsid,
@@ -107,7 +106,9 @@ func TmvhMoFlowReceiveProcessRequest(agency_id string, partner_id string, refid 
 			// Convert the int field to string
 			var counter = strconv.Itoa(clientService.PostbackCounter)
 
-			cacheData := "{\"keyword\":\"" + clientService.Keyword + "\",\"shortcode\":\"" + clientService.Shortcode + "\",\"telcoid\":\"" + clientService.TelcoID + "\",\"ads_id\":\"" + clientService.AdsID + "\",\"client_partner_id\":\"" + clientService.ClientPartnerID + "\",\"wap_aoc_refid\":\"" + clientService.WapAocRefID + "\",\"wap_aoc_id\":\"" + clientService.WapAocID + "\",\"wap_aoc_media\":\"" + clientService.WapAocMedia + "\",\"postback_url\":\"" + clientService.PostbackURL + "\",\"dn_url\":\"" + clientService.DNURL + "\",\"postback_counter\":" + counter + "}"
+			//cacheData := "{\"keyword\":\"" + clientService.Keyword + "\",\"shortcode\":\"" + clientService.Shortcode + "\",\"telcoid\":\"" + clientService.TelcoID + "\",\"ads_id\":\"" + clientService.AdsID + "\",\"client_partner_id\":\"" + clientService.ClientPartnerID + "\",\"wap_aoc_refid\":\"" + clientService.WapAocRefID + "\",\"wap_aoc_id\":\"" + clientService.WapAocID + "\",\"wap_aoc_media\":\"" + clientService.WapAocMedia + "\",\"postback_url\":\"" + clientService.PostbackURL + "\",\"dn_url\":\"" + clientService.DNURL + "\",\"postback_counter\":" + counter + "}"
+
+			cacheData := "{\"keyword\":\"" + clientService.Keyword + "\",\"shortcode\":\"" + clientService.Shortcode + "\",\"telcoid\":\"" + clientService.TelcoID + "\",\"ads_id\":\"" + clientService.AdsID + "\",\"client_partner_id\":\"" + clientService.ClientPartnerID + "\",\"postback_url\":\"" + clientService.PostbackURL + "\",\"dn_url\":\"" + clientService.DNURL + "\",\"postback_counter\":" + counter + "}"
 			redis_key := "SERVICE:" + partner_id + ":" + adsid
 			ttl := 240 * time.Hour // expires in 240 Hour
 			// Set key with TTL
@@ -142,7 +143,6 @@ func TmvhMoFlowReceiveProcessRequest(agency_id string, partner_id string, refid 
 	shortcode := cacheClientService.Shortcode
 
 	//fmt.Printf("Extracted shortcode: %s\n", shortcode)
-
 	res["code"] = "302"
 	res["partner_id"] = partner_id
 	res["refid"] = refid

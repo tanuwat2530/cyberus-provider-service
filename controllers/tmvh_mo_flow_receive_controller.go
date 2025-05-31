@@ -17,12 +17,12 @@ func TmvhMoFlowReceive(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client_ip := r.RemoteAddr
-	agency_id := r.URL.Query().Get("agency_id")
+	//agency_id := r.URL.Query().Get("agency_id")
 	partner_id := r.URL.Query().Get("partner_id")
 	refid := r.URL.Query().Get("refid")
 	adsid := r.URL.Query().Get("adsid")
 
-	response := services.TmvhMoFlowReceiveProcessRequest(agency_id, partner_id, refid, adsid, client_ip)
+	response := services.TmvhMoFlowReceiveProcessRequest(partner_id, refid, adsid, client_ip)
 
 	// Build redirect URL with query params
 	if response["code"] == "302" {
