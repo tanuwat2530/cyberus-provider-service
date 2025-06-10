@@ -20,7 +20,7 @@ func TmvhMoFlowReceive(w http.ResponseWriter, r *http.Request) {
 	//agency_id := r.URL.Query().Get("agency_id")
 	partner_id := r.URL.Query().Get("partner_id")
 	refid := r.URL.Query().Get("refid")
-	adsid := r.URL.Query().Get("adsid")
+	adsid := r.URL.Query().Get("media")
 
 	response := services.TmvhMoFlowReceiveProcessRequest(partner_id, refid, adsid, client_ip)
 
