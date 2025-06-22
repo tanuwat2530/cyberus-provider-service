@@ -9,6 +9,7 @@ import (
 func SetupRoutes() {
 	// Register routes using http.HandleFunc
 	http.HandleFunc("/ais/receive", controllers.AisMoFlowReceive)
+	http.HandleFunc("/dtac/receive", controllers.TmvhMoFlowReceive)
 	http.HandleFunc("/tmvh/receive", controllers.TmvhMoFlowReceive)
 	http.HandleFunc("/api/", HomeHandler)
 }
