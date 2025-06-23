@@ -35,6 +35,8 @@ func TmvhMoFlowReceiveProcessRequest(partner_id string, refid string, adsid stri
 	dbConnection := os.Getenv("BN_DB_URL")
 	res := map[string]string{}
 
+	telcoId := ""
+	redisTelcoKey := ""
 	// // Get current time
 	now := time.Now()
 	// // Unix timestamp in nanoseconds
@@ -109,6 +111,9 @@ func TmvhMoFlowReceiveProcessRequest(partner_id string, refid string, adsid stri
 			//cacheData := "{\"keyword\":\"" + clientService.Keyword + "\",\"shortcode\":\"" + clientService.Shortcode + "\",\"telcoid\":\"" + clientService.TelcoID + "\",\"ads_id\":\"" + clientService.AdsID + "\",\"client_partner_id\":\"" + clientService.ClientPartnerID + "\",\"wap_aoc_refid\":\"" + clientService.WapAocRefID + "\",\"wap_aoc_id\":\"" + clientService.WapAocID + "\",\"wap_aoc_media\":\"" + clientService.WapAocMedia + "\",\"postback_url\":\"" + clientService.PostbackURL + "\",\"dn_url\":\"" + clientService.DNURL + "\",\"postback_counter\":" + counter + "}"
 
 			cacheData := "{\"keyword\":\"" + clientService.Keyword + "\",\"shortcode\":\"" + clientService.Shortcode + "\",\"telcoid\":\"" + clientService.TelcoID + "\",\"ads_id\":\"" + clientService.AdsID + "\",\"client_partner_id\":\"" + clientService.ClientPartnerID + "\",\"postback_url\":\"" + clientService.PostbackURL + "\",\"dn_url\":\"" + clientService.DNURL + "\",\"postback_counter\":" + counter + "}"
+
+			telcoId = clientService.TelcoID
+
 			redis_key := "SERVICE:" + partner_id + ":" + adsid
 			ttl := 240 * time.Hour // expires in 240 Hour
 			// Set key with TTL
@@ -119,10 +124,19 @@ func TmvhMoFlowReceiveProcessRequest(partner_id string, refid string, adsid stri
 		}
 	}
 
-	redis_key := "TMVH-MO:" + partner_id + ":" + transaction_id
+	if telcoId == "1" {
+		redisTelcoKey = "TMVH-MO:" + partner_id + ":" + transaction_id
+	}
+	if telcoId == "2" {
+		redisTelcoKey = "DTAC-MO:" + partner_id + ":" + transaction_id
+	}
+	if telcoId == "3" {
+		redisTelcoKey = "AIS-MO:" + partner_id + ":" + transaction_id
+	}
+
 	ttl := 240 * time.Hour // expires in 240 Hour
 	// Set key with TTL
-	if err := redis_db.SetWithTTL(redis_key, payloadString, ttl); err != nil {
+	if err := redis_db.SetWithTTL(redisTelcoKey, payloadString, ttl); err != nil {
 		//write to file if Redis problem or forward request to AIS
 		log.Fatalf("SetWithTTL error: %v , %v", err, payloadString)
 	}
